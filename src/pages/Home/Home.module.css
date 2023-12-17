@@ -1,9 +1,3 @@
-.accordContainer {
-  padding: 30px 20px;
-}
-.question {
+.home {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px 20px;
 }

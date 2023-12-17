@@ -8,6 +8,7 @@ import { DateRangePicker } from "react-date-range";
 import { addDays } from "date-fns";
 
 import { LineChart, BarChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { SideBar } from "../../Components/SideBar/SideBar";
 
 export const Home = () => {
   const [formValues, setFormValues] = useState({
@@ -32,7 +33,7 @@ export const Home = () => {
   useEffect(() => {
     const cookie = JSON.parse(localStorage.getItem("filters"));
     if (cookie) {
-      const { ageRange, gender, dateRange } = cookie;
+      const { ageRange, gender } = cookie;
       setFormValues({ ageRange, gender });
       // setDateRange(dateRange);
     }
@@ -99,7 +100,8 @@ export const Home = () => {
   };
 
   return (
-    <>
+    <div className={styles.home}>
+      <SideBar />
       <div className={styles.filters}>
         <DateRangePicker
           onChange={(item) => {
@@ -174,11 +176,6 @@ export const Home = () => {
           <span>No charts to display for the selected filters</span>
         </>
       )}
-
-      {/* <div style={{ border: "1px solid black", padding: "10px", marginTop: "20px" }}>
-        <p>Clicked Bar: {selectedBar && selectedBar.name}</p>
-
-      </div> */}
-    </>
+    </div>
   );
 };
