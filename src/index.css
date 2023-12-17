@@ -73,3 +73,7 @@ video {
 :root {
   --primary-color: #fb5d5d;
 }
+
+.rdrDefinedRangesWrapper {
+  display: none;
+}

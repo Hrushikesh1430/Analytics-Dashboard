@@ -7,21 +7,15 @@ import "react-date-range/dist/theme/default.css"; // theme css file
 import { DateRangePicker } from "react-date-range";
 import { addDays } from "date-fns";
 
-import { LineChart, BarChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, BarChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts";
 import { SideBar } from "../../Components/SideBar/SideBar";
 
 export const Home = () => {
+  const { innerWidth } = useContext(DataContext);
   const [formValues, setFormValues] = useState({
     gender: "male",
     ageRange: "15-25",
   });
-
-  const [chartData, setChartData] = useState([]);
-  const [barChartData, setBarChartData] = useState([]);
-  const [lineChartData, setLineChartData] = useState([]);
-
-  const [filteredData, setFilteredData] = useState([]);
-
   const [dateRange, setDateRange] = useState([
     {
       startDate: new Date("2022-10-04"),
@@ -30,14 +24,27 @@ export const Home = () => {
     },
   ]);
 
+  const [chartData, setChartData] = useState([]);
+  const [barChartData, setBarChartData] = useState([]);
+  const [lineChartData, setLineChartData] = useState([]);
+
+  const [filteredData, setFilteredData] = useState([]);
+
   useEffect(() => {
     const cookie = JSON.parse(localStorage.getItem("filters"));
     if (cookie) {
-      const { ageRange, gender } = cookie;
+      const { ageRange, gender, dateRange } = cookie;
+
+      const item = {
+        ageRange,
+        gender,
+      };
+      let cookieDate = [{ ...dateRange[0], startDate: new Date(dateRange[0].startDate), endDate: new Date(dateRange[0].endDate) }];
+      console.log("cookieItem", item);
       setFormValues({ ageRange, gender });
-      // setDateRange(dateRange);
+      setDateRange(cookieDate);
     }
-    console.log("cookie", cookie);
+
     fetchChartData();
   }, []);
 
@@ -47,6 +54,12 @@ export const Home = () => {
 
   const storeCookie = (key, value) => {
     const item = { ...formValues, dateRange };
+    console.log(
+      JSON.stringify({
+        ...item,
+        [key]: value,
+      })
+    );
     localStorage.setItem(
       "filters",
       JSON.stringify({
@@ -95,87 +108,113 @@ export const Home = () => {
         name: new Date(item.Day).toLocaleDateString("en-US", { day: "2-digit", month: "short" }),
         value: item[bar.name],
       }));
+      console.log(barCheck);
       setLineChartData(barCheck);
     }
   };
 
   return (
-    <div className={styles.home}>
+    <div className={styles.homeContainer}>
       <SideBar />
-      <div className={styles.filters}>
-        <DateRangePicker
-          onChange={(item) => {
-            setDateRange([item.selection]);
-          }}
-          showSelectionPreview={true}
-          moveRangeOnFirstSelection={false}
-          months={2}
-          ranges={dateRange}
-          direction="horizontal"
-        />
-        <div>
-          <label htmlFor="ageRange">Age</label>
-          <select
-            name="ageRange"
-            id="age"
-            value={formValues.ageRange}
-            onChange={(e) => {
-              setFormValues((formValues) => ({
-                ...formValues,
-                ageRange: e.target.value,
-              }));
-              storeCookie("ageRange", e.target.value);
-            }}
-          >
-            <option value="15-25">15-25</option>
-            <option value=">25">Greater than 25</option>
-          </select>
-          <label htmlFor="gender">Gender</label>
-          <select
-            name="gender"
-            id="gender"
-            value={formValues.gender}
-            onChange={(e) => {
-              setFormValues((formValues) => ({
-                ...formValues,
-                gender: e.target.value,
-              }));
-              storeCookie("gender", e.target.value);
-            }}
-          >
-            <option value="male">male</option>
-            <option value="female">female</option>
-          </select>
+      <div className={styles.main}>
+        <div className={styles.greetings}>Hello Jeni 👋🏼,</div>
+        <div className={styles.filters}>
+          <div className={styles.datePickerContainer}>
+            <h3 className={styles.heading}>Date Range</h3>
+            <DateRangePicker
+              onChange={(item) => {
+                console.log(item.selection);
+                storeCookie("dateRange", [item.selection]);
+                setDateRange([item.selection]);
+              }}
+              showSelectionPreview={true}
+              moveRangeOnFirstSelection={false}
+              months={2}
+              ranges={dateRange}
+              direction="horizontal"
+            />
+          </div>
+
+          <div className={styles.selectFilterContainer}>
+            <div>
+              <label htmlFor="ageRange">Age Filter</label>
+              <select
+                name="ageRange"
+                id="age"
+                value={formValues.ageRange}
+                className={styles.customSelect}
+                onChange={(e) => {
+                  setFormValues((formValues) => ({
+                    ...formValues,
+                    ageRange: e.target.value,
+                  }));
+                  storeCookie("ageRange", e.target.value);
+                }}
+              >
+                <option value="15-25">15-25</option>
+                <option value=">25">Greater than 25</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="gender">Gender Filter</label>
+              <select
+                name="gender"
+                id="gender"
+                className={styles.customSelect}
+                value={formValues.gender}
+                onChange={(e) => {
+                  setFormValues((formValues) => ({
+                    ...formValues,
+                    gender: e.target.value,
+                  }));
+                  storeCookie("gender", e.target.value);
+                }}
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+          </div>
         </div>
+        {barChartData.length > 0 ? (
+          <>
+            <ResponsiveContainer width="100%" height={300} className={styles.chartContainer}>
+              {barChartData && (
+                <BarChart data={barChartData} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" label={{ value: "Time Spent", position: "insideBottom", offset: -5 }} />
+                  <YAxis dataKey="name" type="category" label={{ value: "Features", angle: -90, position: "insideLeft", margin: 20 }} />
+                  <Tooltip />
+
+                  <Bar dataKey="value" fill="#8884d8" barSize={100} onClick={(bar) => handleBarClick(bar)} />
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+
+            {lineChartData.length > 0 && (
+              <ResponsiveContainer width="100%" height={300} className={styles.chartContainer}>
+                <LineChart data={lineChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" label={{ value: "Dates", position: "insideBottom", offset: -5 }} />
+                  <YAxis label={{ value: "Time Spent", angle: -90, position: "insideLeft", margin: 20 }} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="value" stroke="#8884d8" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </>
+        ) : (
+          <>
+            <span>No charts to display for the selected filters</span>
+          </>
+        )}
       </div>
-      {barChartData.length > 0 ? (
-        <>
-          {barChartData && (
-            <BarChart width={600} height={200} data={barChartData} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="name" type="category" />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#8884d8" barSize={100} onClick={(bar) => handleBarClick(bar)} />
-            </BarChart>
-          )}
-          {lineChartData.length > 0 && (
-            <LineChart width={400} height={300} data={lineChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="value" stroke="#8884d8" />
-            </LineChart>
-          )}
-        </>
-      ) : (
-        <>
-          <span>No charts to display for the selected filters</span>
-        </>
-      )}
+
+      {/* <div className={styles.main}>
+
+
+     
+      </div> */}
     </div>
   );
 };
