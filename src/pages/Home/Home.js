@@ -92,7 +92,7 @@ export const Home = () => {
 
   const fetchChartData = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/chartinfo");
+      const response = await fetch("https://analyticsbackend.onrender.com/api/chartinfo");
       const { chartData } = await response.json();
       await setChartData(chartData);
     } catch (error) {
