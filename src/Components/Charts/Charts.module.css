@@ -1,0 +1,21 @@
+.chartContainer {
+  padding: 20px;
+  background-color: #ffffff;
+  margin-top: 50px;
+  /* border: 2px solid black; */
+}
+.greetings,
+.lineHeading {
+  display: inline-block;
+  color: #000;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  letter-spacing: -0.18px;
+  padding-left: 1rem;
+  padding-top: 20px;
+}
+.lineHeading {
+  margin-bottom: 40px;
+}
