@@ -1,30 +1,26 @@
-import { useEffect, useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-// import { AuthContext } from "../..";
 import { regexCheck } from "../../Common/Utility";
 
 import styles from "./signup.module.css";
-// import Navbar from "../../Components/Navbar/Navbar";
-// import Footer from "../Home/Footer/Footer";
 
 // import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-
-// import { toast } from "react-toastify";
 
 const Signup = () => {
   const navigate = useNavigate();
   // const { checkLogin, isloggedIn } = useContext(AuthContext);
 
   const intitalValues = {
-    firstName: "",
-    lastName: "",
+    firstname: "",
+    lastname: "",
     email: "",
     password: "",
     confirmPassword: "",
     errors: {
-      firstName: "",
-      lastName: "",
+      firstname: "",
+      lastname: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -50,44 +46,44 @@ const Signup = () => {
 
   const errorCheck = (fieldName, value) => {
     switch (fieldName) {
-      case "firstName":
+      case "firstname":
         if (!value.trim()) {
           setFormValues((formValues) => ({
             ...formValues,
-            firstName: value,
+            firstname: value,
             errors: {
               ...formValues.errors,
-              firstName: "First Name cannot be empty",
+              firstname: "First Name cannot be empty",
             },
           }));
         } else {
           setFormValues((formValues) => ({
             ...formValues,
-            firstName: value,
+            firstname: value,
             errors: {
               ...formValues.errors,
-              firstName: "",
+              firstname: "",
             },
           }));
         }
         break;
-      case "lastName":
+      case "lastname":
         if (!value.trim()) {
           setFormValues((formValues) => ({
             ...formValues,
-            lastName: value,
+            lastname: value,
             errors: {
               ...formValues.errors,
-              lastName: "Last Name cannot be empty",
+              lastname: "Last Name cannot be empty",
             },
           }));
         } else {
           setFormValues((formValues) => ({
             ...formValues,
-            lastName: value,
+            lastname: value,
             errors: {
               ...formValues.errors,
-              lastName: "",
+              lastname: "",
             },
           }));
         }
@@ -187,10 +183,10 @@ const Signup = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    const { firstName, lastName, email, password, confirmPassword } = formValues;
+    const { firstname, lastname, email, password, confirmPassword } = formValues;
 
-    errorCheck("firstName", firstName);
-    errorCheck("lastName", lastName);
+    errorCheck("firstname", firstname);
+    errorCheck("lastname", lastname);
     errorCheck("email", email);
     errorCheck("password", password);
     errorCheck("confirmPassword", confirmPassword);
@@ -199,52 +195,53 @@ const Signup = () => {
 
     let errorFlag = Object.values(formValues.errors).find((item) => item !== "");
 
-    if (!errorFlag && passwordFlag && firstName !== "" && lastName !== "" && email !== "" && password !== "" && confirmPassword !== "") {
-      navigate("/");
+    if (!errorFlag && passwordFlag && firstname !== "" && lastname !== "" && email !== "" && password !== "" && confirmPassword !== "") {
+      const hostName = window.location.href.includes("localhost") ? "http://localhost:5000" : "https://analyticsbackend.onrender.com";
+      const url = `${hostName}/auth/signup`;
+
+      const data = { firstname, lastname, email, password };
+
+      const config = {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      };
+
+      try {
+        const response = await fetch(url, config);
+        const data = await response.json();
+        console.log(data);
+        const { token } = data;
+
+        localStorage.setItem("chartAnalyticsToken", token);
+
+        toast.success(`Signed up`, {
+          position: "bottom-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "dark",
+        });
+        navigate("/");
+      } catch (error) {
+        console.log(error);
+        toast.error(`Signup failed`, {
+          position: "bottom-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "dark",
+        });
+      } finally {
+      }
     }
-
-    // const url = "/api/auth/signup";
-    // const config = {
-    //   method: "POST",
-    //   headers: {
-    //     Accept: "application/json",
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(data),
-    // };
-
-    // try {
-    //   const response = await fetch(url, config);
-    //   const data = await response.json();
-    //   const { errors } = data;
-    //   console.log(data);
-    //   if (!errors) {
-    //     // localStorage.setItem("userToken", encodedToken);
-    //     toast.success(`User Created successfully`, {
-    //       position: "bottom-right",
-    //       autoClose: 2000,
-    //       hideProgressBar: false,
-    //       closeOnClick: true,
-    //       pauseOnHover: true,
-    //       draggable: true,
-    //       theme: "light",
-    //     });
-    //     // navigate("/login");
-    //   } else {
-    //     toast.error(`User Already Exists. Please try with some other credentials`, {
-    //       position: "bottom-right",
-    //       autoClose: 2000,
-    //       hideProgressBar: false,
-    //       closeOnClick: true,
-    //       pauseOnHover: true,
-    //       draggable: true,
-    //       theme: "light",
-    //     });
-    //   }
-    // } catch (error) {
-    // } finally {
-    // }
-    // }
   };
 
   // if (isloggedIn) {
@@ -258,30 +255,30 @@ const Signup = () => {
           <form onSubmit={submitHandler}>
             <div className={styles.formWrapper}>
               <div>
-                <label htmlFor="firstName">First Name</label>
+                <label htmlFor="firstname">First Name</label>
                 <input
                   type="text"
-                  className={`${styles.firstName} ${formValues.errors.firstName !== "" && styles.error}`}
-                  id="firstName"
-                  name="firstName"
+                  className={`${styles.firstname} ${formValues.errors.firstname !== "" && styles.error}`}
+                  id="firstname"
+                  name="firstname"
                   onChange={(e) => {
                     inputHandler(e);
                   }}
                 />
-                {formValues.errors.firstName !== "" && <span className={styles.warning}>{formValues.errors.firstName}</span>}
+                {formValues.errors.firstname !== "" && <span className={styles.warning}>{formValues.errors.firstname}</span>}
               </div>
               <div>
-                <label htmlFor="lastName">Last Name</label>
+                <label htmlFor="lastname">Last Name</label>
                 <input
                   type="text"
-                  className={`${styles.lastName} ${formValues.errors.lastName !== "" && styles.error}`}
-                  id="lastName"
-                  name="lastName"
+                  className={`${styles.lastname} ${formValues.errors.lastname !== "" && styles.error}`}
+                  id="lastname"
+                  name="lastname"
                   onChange={(e) => {
                     inputHandler(e);
                   }}
                 />
-                {formValues.errors.lastName !== "" && <span className={styles.warning}>{formValues.errors.lastName}</span>}
+                {formValues.errors.lastname !== "" && <span className={styles.warning}>{formValues.errors.lastname}</span>}
               </div>
               <div>
                 <label htmlFor="email">Email</label>

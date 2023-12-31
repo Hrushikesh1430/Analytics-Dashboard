@@ -10,8 +10,13 @@ import { SideBar } from "../../Components/SideBar/SideBar";
 import { Filter } from "../../Components/Filters/Filter";
 import { Charts } from "../../Components/Charts/Charts";
 
+import { useNavigate, Navigate } from "react-router-dom";
+import Loader from "../../Components/Loader/Loader";
+
 export const Home = () => {
-  const { innerWidth } = useContext(DataContext);
+  const navigate = useNavigate();
+  const { innerWidth, checkLocalStorage, authtoken, setAuthtoken } = useContext(DataContext);
+  const [isLoading, setIsLoading] = useState(true);
   const [formValues, setFormValues] = useState({
     gender: "male",
     ageRange: "15-25",
@@ -75,12 +80,33 @@ export const Home = () => {
 
   const fetchChartData = async () => {
     try {
-      const url = window.location.href.includes("localhost") ? "http://localhost:5000" : "https://analyticsbackend.onrender.com";
-      const response = await fetch(`${url}/api/chartinfo`);
-      const { chartData } = await response.json();
-      await setChartData(chartData);
+      const hostName = window.location.href.includes("localhost") ? "http://localhost:5000" : "https://analyticsbackend.onrender.com";
+      const url = `${hostName}/chartinfo`;
+      var usertoken = "";
+      if (localStorage.getItem("chartAnalytics")) {
+        const data = JSON.parse(localStorage.getItem("chartAnalytics"));
+        usertoken = data.token;
+        const config = {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: usertoken,
+          },
+        };
+
+        const response = await fetch(url, config);
+        if (response.status === 401) {
+          throw new Error("Token expired or unauthorized");
+        } else {
+          const { chartData } = await response.json();
+          await setChartData(chartData);
+        }
+      }
     } catch (error) {
-      console.log(error);
+      navigate("/login");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -97,20 +123,32 @@ export const Home = () => {
     }
   };
 
+  // checkLocalStorage();
+
+  // if (authtoken === "") {
+  //   navigate("/login");
+  // }
+
   return (
-    <div className={styles.homeContainer}>
-      <SideBar />
-      <div className={styles.main}>
-        <div className={styles.greetings}>Hello Jeni 👋🏼,</div>
-        <Filter formValues={formValues} setFormValues={setFormValues} setDateRange={setDateRange} dateRange={dateRange} />
-        {barChartData.length > 0 ? (
-          <Charts barChartData={barChartData} lineChartData={lineChartData} handleBarClick={handleBarClick} />
-        ) : (
-          <>
-            <span>No charts to display for the selected filters</span>
-          </>
-        )}
-      </div>
+    <div className={styles.parentHome}>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <div className={styles.homeContainer}>
+          <SideBar />
+          <div className={styles.main}>
+            <div className={styles.greetings}>Hello Jeni 👋🏼,</div>
+            <Filter formValues={formValues} setFormValues={setFormValues} setDateRange={setDateRange} dateRange={dateRange} />
+            {barChartData.length > 0 ? (
+              <Charts barChartData={barChartData} lineChartData={lineChartData} handleBarClick={handleBarClick} />
+            ) : (
+              <>
+                <span>No charts to display for the selected filters</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

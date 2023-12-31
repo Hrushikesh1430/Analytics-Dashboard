@@ -6,10 +6,7 @@ import { useNavigate, Navigate } from "react-router-dom";
 
 import styles from "./login.module.css";
 import { regexCheck } from "../../Common/Utility";
-// import Navbar from "../../Components/Navbar/Navbar";
-// import Footer from "../Home/Footer/Footer";
-
-// import { toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 // import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 
@@ -17,8 +14,6 @@ const Login = () => {
   const navigate = useNavigate();
 
   // const { isloggedIn, setUserToken, setIsLoggedIn, setUser } = useContext(AuthContext);
-  // const { getWishListAPI } = useContext(WishListContext);
-  // const { getCartItemsAPI } = useContext(CartContext);
   // const location = useLocation();
 
   const [passwordType, setPasswordType] = useState("password");
@@ -113,72 +108,54 @@ const Login = () => {
     let errorFlag = Object.values(formValues.errors).find((item) => item !== "");
 
     if (!errorFlag && email !== "" && password !== "") {
-      console.log("logged in");
+      const hostName = window.location.href.includes("localhost") ? "http://localhost:5000" : "https://analyticsbackend.onrender.com";
+      const url = `${hostName}/auth/login`;
+
+      const data = { email, password };
+
+      const config = {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      };
+
+      try {
+        const response = await fetch(url, config);
+        const result = await response.json();
+        const { data } = result;
+        const { token } = data;
+
+        console.log(data);
+
+        localStorage.setItem("chartAnalytics", JSON.stringify({ token }));
+
+        toast.success(`Logged in`, {
+          position: "bottom-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "dark",
+        });
+        navigate("/");
+      } catch (error) {
+        console.log(error);
+        toast.error(`Login failed`, {
+          position: "bottom-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "dark",
+        });
+      } finally {
+      }
     }
-
-    // if (!errorFor(validationError)) {
-    //   const data = {
-    //     email: email.value,
-    //     password: password.value,
-    //   };
-
-    //   const url = "/api/auth/login";
-    //   const config = {
-    //     method: "POST",
-    //     headers: {
-    //       Accept: "application/json",
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(data),
-    //   };
-
-    //   try {
-    //     const response = await fetch(url, config);
-    //     const data = await response.json();
-    //     const { errors, encodedToken, foundUser } = data;
-
-    //     if (!errors) {
-    //       localStorage.setItem("userToken", encodedToken);
-    //       localStorage.setItem("loggedUser", JSON.stringify(foundUser));
-    //       setUserToken(encodedToken);
-    //       setIsLoggedIn(true);
-    //       setUser(foundUser);
-    //       getWishListAPI(encodedToken);
-    //       getCartItemsAPI(encodedToken);
-
-    //       console.log(location);
-    //       toast.success("Successfully logged In", {
-    //         position: "bottom-right",
-    //         autoClose: 1500,
-    //         hideProgressBar: false,
-    //         closeOnClick: true,
-    //         pauseOnHover: true,
-    //         draggable: true,
-    //         theme: "light",
-    //       });
-    //       navigate(location?.state?.from?.pathname);
-    //     } else {
-    //       setFormValues((formValues) => ({
-    //         ...formValues,
-    //         password: {
-    //           ...formValues.password,
-    //           error: "Credentials not valid. Please try again",
-    //         },
-    //       }));
-    //       toast.error(`These credentials do not match our records. Please try again`, {
-    //         position: "bottom-right",
-    //         autoClose: 2000,
-    //         hideProgressBar: false,
-    //         closeOnClick: true,
-    //         pauseOnHover: true,
-    //         draggable: true,
-    //         theme: "light",
-    //       });
-    //     }
-    //   } catch (error) {
-    //   } finally {
-    //   }
-    // }
   };
 
   // Redirect to userdetails if logged in

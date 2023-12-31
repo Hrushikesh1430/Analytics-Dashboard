@@ -7,8 +7,12 @@ import { useEffect } from "react";
 import { DataContext } from "./Context/DataContextProvider";
 import { useContext } from "react";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ProtectedRoutes } from "./Components/ProtectedRoutes/ProtectedRoutes";
+
 function App() {
-  const { AppDevice, setAppDevice, innerWidth, setInnerWidth } = useContext(DataContext);
+  const { AppDevice, setAppDevice, innerWidth, setInnerWidth, checkLocalStorage } = useContext(DataContext);
   useEffect(() => {
     function handleResize() {
       if (window.innerWidth >= 1024) {
@@ -23,8 +27,9 @@ function App() {
   }, []);
   return (
     <div className="App">
+      <ToastContainer theme="dark" />
       <Routes>
-        <Route path="/" element={<Home />}></Route>
+        <Route path="/" element={<ProtectedRoutes component={<Home />} redirect={"login"} />}></Route>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
       </Routes>

@@ -40,8 +40,8 @@
 .signup input {
   margin-bottom: 10px;
 }
-.signup .firstName,
-.signup .lastName,
+.signup .firstname,
+.signup .lastname,
 .signup .email,
 .signup .password {
   display: block;
@@ -72,7 +72,7 @@
   cursor: pointer;
 }
 .signup :focus {
-  border: 1px solid blue;
+  border: 1px solid var(--primary-color);
   outline: none;
 }
 .signup form {
